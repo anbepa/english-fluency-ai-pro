@@ -1,4 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { randomUUID } from 'crypto';
 
 interface Body {
   model?: string;
@@ -16,7 +17,7 @@ function demo(body: Body, res: VercelResponse): void {
     ['I can speak for two minutes.', 'Puedo hablar durante dos minutos.', 'ai can spík for tú MÍ-nits']
   ];
   const phrases = samples.slice(0, request.count).map(([textEn, textEs, pronunciation]) => ({
-    id: crypto.randomUUID(), textEn, textEs, pronunciation, topic: request.topic, level: request.level, favorite: false, source: 'deepseek-v4-flash', createdAt: new Date().toISOString()
+    id: randomUUID(), textEn, textEs, pronunciation, topic: request.topic, level: request.level, favorite: false, source: 'deepseek-v4-flash', createdAt: new Date().toISOString()
   }));
   res.status(200).json({ model: body.model ?? 'deepseek-v4-flash', phrases, raw: 'Demo local: configura DEEPSEEK_API_KEY en Vercel para usar IA real.' });
 }
@@ -54,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const list = Array.isArray(parsed) ? parsed : [];
     
     const phrases = list.map((item: any) => ({
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       textEn: String(item.textEn ?? item.english ?? ''),
       textEs: String(item.textEs ?? item.spanish ?? ''),
       pronunciation: String(item.pronunciation ?? ''),
