@@ -1,0 +1,84 @@
+@if (service.isLoading()) {
+  <div class="loader-container">
+    <div class="loader"></div>
+    <p>Loading your achievements...</p>
+  </div>
+} @else {
+  <section class="achievements-card animate-in">
+    <div class="achievements-header">
+      <div class="title-group">
+        <h2>Achievements 🏆</h2>
+        <span class="total-badge">{{ totalMastered() }} total</span>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-text" (click)="toggleSelectAll()" type="button">
+          {{ isAllSelected() ? 'Deselect' : 'Select All' }}
+        </button>
+        <div class="date-input-wrapper">
+          <input type="date" [ngModel]="selectedDate()" (ngModelChange)="selectedDate.set($event)" class="date-picker" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="phrase-groups">
+    @for (group of groupedMastered(); track group[0]) {
+      <div class="date-group animate-in">
+        <div class="date-label">
+          <span>📅 {{ group[0] }}</span>
+          <div class="line"></div>
+        </div>
+
+        @for (phrase of group[1]; track phrase.id) {
+          <div class="phrase-row mastered">
+            <input type="checkbox" [checked]="selectedIds().has(phrase.id)" (change)="toggleSelect(phrase.id)" aria-label="Select achievement" />
+
+            <div class="phrase-info">
+              <div class="text-en">{{ phrase.textEn }}</div>
+              <div class="text-es">{{ phrase.textEs }}</div>
+
+              <div class="meta-row">
+                <button (click)="tts.speak(phrase.textEn)" class="btn-listen-icon" type="button" aria-label="Listen">🔊</button>
+                <span class="pronunciation-small">{{ phrase.pronunciation }}</span>
+                <span class="topic-chip">{{ phrase.topic }}</span>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button class="btn-icon restore" aria-label="Restore to learning feed" (click)="service.toggleMastered(phrase.id)" type="button">🔄</button>
+              <button class="btn-icon delete" aria-label="Delete achievement permanently" (click)="onDelete(phrase)" type="button">✕</button>
+            </div>
+          </div>
+        }
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <div class="empty-icon">🎖️</div>
+        <p>No achievements recorded yet.</p>
+        <p class="small">Keep practicing to see your progress here!</p>
+      </div>
+    }
+  </div>
+
+  @if (totalPages() > 1) {
+    <div class="pagination animate-in">
+      <button class="btn-page" [disabled]="currentPage() === 1" (click)="currentPage.set(currentPage() - 1)">Previous</button>
+      <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+      <button class="btn-page" [disabled]="currentPage() === totalPages()" (click)="currentPage.set(currentPage() + 1)">Next</button>
+    </div>
+  }
+
+  @if (selectedIds().size > 0) {
+    <div class="bulk-actions-bar animate-in">
+      <div class="bulk-content">
+        <div class="selection-count">{{ selectedIds().size }} selected</div>
+        <div class="bulk-btns">
+          <button class="btn bulk-restore" (click)="bulkRestore()" type="button">🔄 Restore</button>
+          <button class="btn bulk-delete" (click)="bulkDelete()" aria-label="Delete selected" type="button">✕</button>
+          <button class="btn bulk-close" (click)="selectedIds().clear()" aria-label="Cancel" type="button">✕</button>
+        </div>
+      </div>
+    </div>
+  }
+}

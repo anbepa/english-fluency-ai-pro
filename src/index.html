@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>ñañelis AI Pro - Tu Entrenador de Inglés</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Domina el inglés con inteligencia artificial. Frases diarias, pronunciación y seguimiento de progreso personalizado.">
+  <meta name="theme-color" content="#0071e3">
+  
+  <!-- Optimización de Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <style>
+    /* Splash screen simple para evitar el 'flash' blanco inicial */
+    body { background: #f5f5f7; margin: 0; font-family: 'Outfit', sans-serif; }
+    .initial-loader {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; color: #0071e3;
+    }
+  </style>
+</head>
+<body>
+  <app-root>
+    <!-- Contenido básico mientras carga Angular para mejorar LCP -->
+    <div class="initial-loader">
+      <h1 style="font-size: 24px; font-weight: 800; margin: 0;">ñañelis AI Pro</h1>
+      <p style="font-size: 14px; opacity: 0.6;">Cargando tu progreso...</p>
+    </div>
+  </app-root>
+</body>
+</html>

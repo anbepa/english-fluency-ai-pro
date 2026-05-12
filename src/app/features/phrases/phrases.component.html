@@ -1,0 +1,148 @@
+@if (service.isLoading()) {
+  <div class="loader-container">
+    <div class="loader"></div>
+    <p>Tailoring your collection...</p>
+  </div>
+} @else {
+
+  <section class="generator-card animate-in">
+    <div (click)="showGenerator.set(!showGenerator())" class="generator-header">
+      <div class="header-info">
+        <span class="icon">✨</span>
+        <div>
+          <h2>Generate New Phrases</h2>
+          <p>AI Coach • Level-specific learning</p>
+        </div>
+      </div>
+      <span class="chevron" [style.transform]="showGenerator() ? 'rotate(180deg)' : 'rotate(0)'">▼</span>
+    </div>
+
+    @if (showGenerator()) {
+      <div class="generator-body animate-in">
+        <div class="grid cols-3">
+          <div class="input-group">
+            <label for="lvl">ENGLISH LEVEL</label>
+            <select id="lvl" [(ngModel)]="aiLevel" (ngModelChange)="onLevelChange()">
+              <option value="auto">Auto (Natural)</option>
+              <option value="A1">A1 - Beginner</option>
+              <option value="A2">A2 - Elementary</option>
+              <option value="B1">B1 - Intermediate</option>
+              <option value="B2">B2 - Upper Intermediate</option>
+              <option value="C1">C1 - Advanced</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="tpc">TOPIC</label>
+            <select id="tpc" [ngModel]="isCustomTopic() ? 'custom' : aiTopic" (ngModelChange)="onTopicChange($event)">
+              @for (topic of suggestedTopics(); track topic) {
+                <option [value]="topic">{{ topic }}</option>
+              }
+              <option value="custom">✍️ Custom Topic...</option>
+            </select>
+            @if (isCustomTopic()) {
+              <input [(ngModel)]="aiTopic" placeholder="Type your custom topic..." class="animate-in" />
+            }
+          </div>
+          <div class="input-group">
+            <label for="qty">QUANTITY</label>
+            <input id="qty" type="number" min="1" max="20" [(ngModel)]="aiCount" />
+          </div>
+        </div>
+        <button class="btn" (click)="generateAi()" [disabled]="loading()" type="button">
+          {{ loading() ? 'Generating magic...' : 'Generate Phrases' }}
+        </button>
+      </div>
+    }
+  </section>
+
+  @if (dailyPhrase()) {
+    <section class="daily-card animate-in">
+      <div class="daily-content">
+        <div class="daily-header">
+          <span class="badge-daily">📅 DAILY CHALLENGE</span>
+          <button class="btn-mastered" (click)="service.toggleMastered(dailyPhrase()!.id)" type="button">Mastered!</button>
+        </div>
+
+        <h2 class="daily-text-en">{{ dailyPhrase()?.textEn }}</h2>
+        <p class="daily-text-es">{{ dailyPhrase()?.textEs }}</p>
+
+        <button class="btn-listen-daily" (click)="tts.speak(dailyPhrase()!.textEn)" type="button" aria-label="Listen pronunciation">
+          <span class="icon">🔊</span>
+          <span class="pronunciation">{{ dailyPhrase()?.pronunciation }}</span>
+        </button>
+      </div>
+    </section>
+  }
+
+  <div class="phrase-groups">
+    <div class="feed-header">
+      <h3>Your Feed</h3>
+      <div class="feed-actions">
+        <button class="btn-text" (click)="toggleSelectAll()" type="button">
+          {{ isAllSelected() ? 'Deselect All' : 'Select All' }}
+        </button>
+        <span class="count-badge">{{ filtered().length }} tasks</span>
+      </div>
+    </div>
+
+    @for (group of groupedPhrases(); track group[0]) {
+      <div class="date-group animate-in">
+        <div class="date-label">
+          {{ group[0] }}
+          <div class="line"></div>
+        </div>
+
+        @for (phrase of group[1]; track phrase.id) {
+          <div class="phrase-row animate-in">
+            <input type="checkbox" [checked]="selectedIds().has(phrase.id)" (change)="toggleSelect(phrase.id)" aria-label="Select phrase" />
+
+            <div class="phrase-info">
+              <div class="text-en">{{ phrase.textEn }}</div>
+              <div class="text-es">{{ phrase.textEs }}</div>
+              <div class="meta-row">
+                <button (click)="tts.speak(phrase.textEn)" class="btn-listen-icon" type="button" aria-label="Listen">🔊</button>
+                <span class="pronunciation-small">{{ phrase.pronunciation }}</span>
+                <span class="topic-chip">{{ phrase.topic }}</span>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button class="btn-icon check" aria-label="Mark as Mastered" (click)="service.toggleMastered(phrase.id)" type="button">✓</button>
+              <button class="btn-icon star" [attr.aria-label]="phrase.favorite ? 'Remove favorite' : 'Add favorite'" (click)="service.toggleFavorite(phrase.id)" type="button">
+                <span [style.color]="phrase.favorite ? '#ffcc00' : '#c7c7cc'">★</span>
+              </button>
+              <button class="btn-icon delete" aria-label="Delete phrase" (click)="onDelete(phrase)" type="button">✕</button>
+            </div>
+          </div>
+        }
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <p>Your feed is empty.</p>
+        <button class="btn secondary" (click)="showGenerator.set(true)" type="button">Generate new phrases ✨</button>
+      </div>
+    }
+
+    @if (totalPages() > 1) {
+      <div class="pagination animate-in">
+        <button class="btn-page" [disabled]="currentPage() === 1" (click)="currentPage.set(currentPage() - 1)">Previous</button>
+        <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button class="btn-page" [disabled]="currentPage() === totalPages()" (click)="currentPage.set(currentPage() + 1)">Next</button>
+      </div>
+    }
+  </div>
+
+  @if (selectedIds().size > 0) {
+    <div class="bulk-actions-bar animate-in">
+      <div class="bulk-content">
+        <div class="selection-count">{{ selectedIds().size }} selected</div>
+        <div class="bulk-btns">
+          <button class="btn bulk-master" (click)="bulkMarkMastered()" type="button">✓ Master</button>
+          <button class="btn bulk-delete" (click)="bulkDelete()" aria-label="Delete selected" type="button">✕</button>
+          <button class="btn bulk-close" (click)="selectedIds().clear()" aria-label="Cancel selection" type="button">✕</button>
+        </div>
+      </div>
+    </div>
+  }
+}

@@ -1,0 +1,65 @@
+/* Estilos exclusivos del componente Mastered */
+
+.achievements-card {
+  background: white;
+  border-radius: 20px;
+  border: 1.5px solid #e5e5ea;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.achievements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.title-group h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+}
+
+.total-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--success);
+  background: #eefdf3;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.filter-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.date-input-wrapper { position: relative; }
+
+.date-picker {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #e5e5ea;
+  font-size: 13px;
+  font-weight: 600;
+  background: #fbfbfd;
+  width: 140px;
+}
+
+/* Mastered checkbox uses --success instead of --accent */
+input[type="checkbox"]:checked {
+  background: var(--success);
+  border-color: var(--success);
+}
