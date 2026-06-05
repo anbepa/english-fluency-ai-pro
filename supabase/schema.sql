@@ -45,10 +45,32 @@ create table if not exists public.ai_generation_logs (
   created_at timestamptz not null default now()
 );
 
+-- ============================================================
+-- Conversations & Paragraphs (AI generated)
+-- ============================================================
+create table if not exists public.conversations (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references auth.users(id) on delete cascade,
+  mode text not null default 'dialogue' check (mode in ('dialogue','paragraph')),
+  topic text not null,
+  level text not null default 'beginner',
+  title text not null default '',
+  summary_es text not null default '',
+  lines jsonb not null default '[]'::jsonb,
+  source text not null default 'ai',
+  favorite boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz
+);
+
+create index if not exists conversations_user_created_idx
+  on public.conversations (user_id, created_at desc);
+
 alter table public.profiles enable row level security;
 alter table public.phrases enable row level security;
 alter table public.speaking_sessions enable row level security;
 alter table public.ai_generation_logs enable row level security;
+alter table public.conversations enable row level security;
 
 create policy "profiles_select_own" on public.profiles for select using (auth.uid() = id);
 create policy "profiles_insert_own" on public.profiles for insert with check (auth.uid() = id);
@@ -56,3 +78,4 @@ create policy "profiles_update_own" on public.profiles for update using (auth.ui
 create policy "phrases_crud_own" on public.phrases for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "sessions_crud_own" on public.speaking_sessions for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "logs_crud_own" on public.ai_generation_logs for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "conversations_crud_own" on public.conversations for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

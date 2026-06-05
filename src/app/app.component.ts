@@ -16,8 +16,9 @@ import { ModalComponent } from './shared/components/modal/modal.component';
 
         <!-- Segmented Control Estilo iOS -->
         <nav class="segmented-control">
-          <button routerLink="/phrases" routerLinkActive="active" class="segment">Smart Phrases</button>
-          <button routerLink="/mastered" routerLinkActive="active" class="segment">Mastered Collection</button>
+          <button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="segment">Phrases</button>
+          <button routerLink="/conversations" routerLinkActive="active" class="segment">Conversations</button>
+          <button routerLink="/mastered" routerLinkActive="active" class="segment">Mastered</button>
         </nav>
       </header>
 

@@ -25,6 +25,60 @@ export interface GeneratePhraseResponse {
   phrases: Partial<Phrase>[];
 }
 
+export interface SpeakingSession {
+  id: string;
+  date: string;
+  topic: string;
+  durationSeconds: number;
+  fluencyLevel: number;
+  notes: string;
+  phraseIds: string[];
+  status: 'pending' | 'completed' | 'cancelled';
+  createdAt: string;
+}
+
+// ============================================================
+//   Conversations & Paragraphs (AI-generated content)
+// ============================================================
+
+export type ConversationMode = 'dialogue' | 'paragraph';
+
+export interface ConversationLine {
+  speaker: 'A' | 'B' | 'NARRATOR';
+  textEn: string;
+  textEs: string;
+  pronunciation: string;
+}
+
+export interface Conversation {
+  id: string;
+  mode: ConversationMode;
+  topic: string;
+  level: EnglishLevel;
+  title: string;
+  summaryEs: string;
+  lines: ConversationLine[];
+  source: string;
+  favorite: boolean;
+  createdAt: string;
+}
+
+export interface GenerateConversationRequest {
+  mode: ConversationMode;
+  topic: string;
+  level: EnglishLevel;
+  /** Approximate number of lines for dialogue / sentences for paragraph */
+  length: number;
+  includeSpanish?: boolean;
+  includePronunciation?: boolean;
+}
+
+export interface GenerateConversationResponse {
+  model: string;
+  conversation: Conversation;
+  raw?: string;
+}
+
 export const TOPICS_BY_LEVEL: Record<string, string[]> = {
   'A1': [
     'Daily Routine', 'Family & Friends', 'Food & Drinks', 'Shopping', 'Colors & Numbers', 

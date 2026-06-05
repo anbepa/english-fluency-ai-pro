@@ -1,0 +1,168 @@
+@if (service.isLoading()) {
+  <div class="loader-container">
+    <div class="loader"></div>
+    <p>Loading your conversations...</p>
+  </div>
+} @else {
+
+  <!-- Generator -->
+  <section class="generator-card animate-in">
+    <div (click)="showGenerator.set(!showGenerator())" class="generator-header">
+      <div class="header-info">
+        <span class="icon">💬</span>
+        <div>
+          <h2>Generate Conversation</h2>
+          <p>AI Coach • Dialogue or Paragraph by topic</p>
+        </div>
+      </div>
+      <span class="chevron" [style.transform]="showGenerator() ? 'rotate(180deg)' : 'rotate(0)'">▼</span>
+    </div>
+
+    @if (showGenerator()) {
+      <div class="generator-body animate-in">
+        <!-- Mode Selector -->
+        <div class="mode-tabs">
+          @for (m of modes; track m.value) {
+            <button
+              type="button"
+              class="mode-tab"
+              [class.active]="mode() === m.value"
+              (click)="setMode(m.value)">
+              <span class="mode-emoji">{{ m.emoji }}</span>
+              <div class="mode-text">
+                <strong>{{ m.label }}</strong>
+                <small>{{ m.hint }}</small>
+              </div>
+            </button>
+          }
+        </div>
+
+        <div class="grid cols-3">
+          <div class="input-group">
+            <label for="cv-level">ENGLISH LEVEL</label>
+            <select id="cv-level" [(ngModel)]="level" (ngModelChange)="onLevelChange()">
+              <option value="auto">Auto (Natural)</option>
+              <option value="A1">A1 - Beginner</option>
+              <option value="A2">A2 - Elementary</option>
+              <option value="B1">B1 - Intermediate</option>
+              <option value="B2">B2 - Upper Intermediate</option>
+              <option value="C1">C1 - Advanced</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="cv-topic">TOPIC / SUB-TOPIC</label>
+            <select id="cv-topic" [ngModel]="isCustomTopic() ? 'custom' : topic" (ngModelChange)="onTopicChange($event)">
+              @for (t of suggestedTopics(); track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+              <option value="custom">✍️ Custom topic...</option>
+            </select>
+            @if (isCustomTopic()) {
+              <input [(ngModel)]="topic" placeholder="e.g. Returning a defective product" class="animate-in" />
+            }
+          </div>
+
+          <div class="input-group">
+            <label for="cv-length">{{ mode() === 'paragraph' ? 'SENTENCES' : 'LINES' }}</label>
+            <input id="cv-length" type="number" min="3" max="20" [(ngModel)]="length" />
+          </div>
+        </div>
+
+        <button class="btn" (click)="generate()" [disabled]="loading()" type="button">
+          {{ loading() ? 'Crafting your ' + (mode() === 'paragraph' ? 'paragraph' : 'dialogue') + '...' : 'Generate ' + (mode() === 'paragraph' ? 'Paragraph' : 'Dialogue') + ' ✨' }}
+        </button>
+      </div>
+    }
+  </section>
+
+  <!-- List -->
+  <div class="conv-feed">
+    <div class="feed-header">
+      <h3>Your Conversations</h3>
+      <span class="count-badge">{{ service.conversations().length }} saved</span>
+    </div>
+
+    @if (service.usingLocal()) {
+      <div class="local-banner">
+        <span>📱</span>
+        <p>Saved locally on this device. Apply the SQL migration to sync with Supabase.</p>
+      </div>
+    }
+
+    @for (group of groupedByDate(); track group[0]) {
+      <div class="date-group animate-in">
+        <div class="date-label">
+          {{ group[0] }}
+          <div class="line"></div>
+        </div>
+
+        @for (c of group[1]; track c.id) {
+          <article class="conv-card animate-in" [class.expanded]="expandedId() === c.id">
+            <header class="conv-card-header" (click)="toggleExpand(c.id)">
+              <div class="conv-meta">
+                <span class="badge mode-badge" [attr.data-mode]="c.mode">
+                  {{ c.mode === 'paragraph' ? '📖 Paragraph' : '💬 Dialogue' }}
+                </span>
+                <span class="badge level-badge">{{ c.level }}</span>
+                <span class="topic-chip">{{ c.topic }}</span>
+              </div>
+
+              <h4 class="conv-title">{{ c.title || c.topic }}</h4>
+              @if (c.summaryEs) {
+                <p class="conv-summary">{{ c.summaryEs }}</p>
+              }
+
+              <div class="conv-actions" (click)="$event.stopPropagation()">
+                <button
+                  type="button"
+                  class="btn-play"
+                  [class.playing]="currentlyPlaying() === c.id"
+                  (click)="playFull(c)"
+                  [attr.aria-label]="currentlyPlaying() === c.id ? 'Stop' : 'Play full'">
+                  {{ currentlyPlaying() === c.id ? '⏸ Stop' : '▶ Play full' }}
+                </button>
+                <button class="btn-icon star" type="button" (click)="toggleFavorite(c)" [attr.aria-label]="c.favorite ? 'Unfavorite' : 'Favorite'">
+                  <span [style.color]="c.favorite ? '#ffcc00' : '#c7c7cc'">★</span>
+                </button>
+                <button class="btn-icon delete" type="button" (click)="onDelete(c)" aria-label="Delete">✕</button>
+                <span class="chevron-mini" [style.transform]="expandedId() === c.id ? 'rotate(180deg)' : 'rotate(0)'">▼</span>
+              </div>
+            </header>
+
+            @if (expandedId() === c.id) {
+              <div class="conv-body animate-in">
+                @for (line of c.lines; track $index) {
+                  <div class="conv-line" [attr.data-speaker]="line.speaker">
+                    @if (c.mode !== 'paragraph') {
+                      <div class="speaker-bubble" [attr.data-speaker]="line.speaker">{{ speakerLabel(line.speaker) }}</div>
+                    }
+                    <div class="line-content">
+                      <p class="line-en">{{ line.textEn }}</p>
+                      @if (line.textEs) {
+                        <p class="line-es">{{ line.textEs }}</p>
+                      }
+                      <div class="line-meta">
+                        <button class="btn-listen-icon" type="button" (click)="speakLine(line.textEn, line.speaker)" aria-label="Listen">🔊</button>
+                        @if (line.pronunciation) {
+                          <span class="pronunciation-small">{{ line.pronunciation }}</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </article>
+        }
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <div class="empty-icon">💭</div>
+        <p>No conversations yet.</p>
+        <p class="small">Pick a topic above and let the AI craft a dialogue or paragraph for you.</p>
+        <button class="btn secondary" (click)="showGenerator.set(true)" type="button">Generate now ✨</button>
+      </div>
+    }
+  </div>
+}

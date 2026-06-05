@@ -1,4 +1,5 @@
 {
   "version": 2,
-  "framework": "angular"
+  "framework": "angular",
+  "devCommand": "node set-env.js && ng serve --host 0.0.0.0 --port $PORT"
 }
